@@ -7,7 +7,7 @@ class Customer:
         self.workers_needed = random.randint(1, 50)
         self.days_needed = random.randint(1, 14)
         self.min_budget = random.randint(10, 15)
-        self.max_budget = random.randint(16, 25)  # Ensure max is always higher than min
+        self.max_budget = random.randint(16, 30)  # Ensure max is always higher than min
         self.displayed_budget = random.randint(self.min_budget, self.max_budget)  # Hidden real budget range
 
     def accept_offer(self, bill_rate):
@@ -37,6 +37,18 @@ class Game:
     def play_round(self, customer, workers, bill_rate, pay_rate):
         # Check if customer accepts the bill rate
         if not customer.accept_offer(bill_rate):
+            # If rejected, add to the summary with 0 workers and 0 earnings
+            round_summary = {
+                "Round": len(self.round_summaries) + 1,
+                "Max Bill Rate": f"${customer.max_budget:.2f}",
+                "Used Bill Rate": f"${bill_rate:.2f}",
+                "Workers Needed": customer.workers_needed,
+                "Workers Worked": 0,
+                "Max Earnings": f"${0.00:.2f}",
+                "Actual Earnings": f"${0.00:.2f}",
+                "% of Potential Earned": f"0.00%"
+            }
+            self.round_summaries.append(round_summary)
             return "Customer rejected the offer.", 0
         
         # Check if workers accept the pay rate
@@ -130,7 +142,7 @@ def main():
                 st.session_state.workers = st.session_state.game.generate_workers(customer.workers_needed)
             
             # Player proposes pay rate for workers
-            pay_rate = st.slider("Propose a Pay Rate for Workers (per hour)", min_value=8.0, max_value=30.0, value=10.0)
+            pay_rate = st.slider("Propose a Pay Rate for Workers (per hour)", min_value=8.0, max_value=30.0, value=15.0)
 
             if st.button("Submit Offer"):
                 # Play round and calculate score
@@ -156,7 +168,7 @@ def main():
         # Generate and display the game summary
         summary_df = st.session_state.game.game_summary()
         st.write("Game Summary:")
-        st.dataframe(summary_df, use_container_width=True)  # Use full width of the container to display the table
+        st.dataframe(summary_df, use_container_width=False, width=1100, hide_index=True)  # Use full width of the container to display the table
         
         if st.button("Restart Game"):
             st.session_state.clear()  # Reset the game state to start fresh
